@@ -1,116 +1,61 @@
-
 <script>
-    import '../app.css';
-    import Results from '../components/results.svelte'
-    
-    let codes = [32,188,190,191,189];
-    let [currentIndex,errors,speed] = [0,0,0];
-    let [key,typed] = ['',''];
-    let start,end,code,time,accuracy,active,state = 'false',color = 'yellow';
-    let para = 
-                'Lorem ipsum dolor sit amet consectetur, adipisicing elit. Voluptatibus inventore perspiciatis enim quibusdam cum ipsa labore ipsam quia reprehenderit reiciendis architecto facere, maiores consequuntur repellendus facilis itaque debitis, aliquam impedit?'
-
-    function handleKeyDown (event) {
-        if (event.which >= 65 && event.which <= 90 || codes.includes(event.which)) {
-            key = event.key;
-            code = event.which;
-        }
-        if (event.which == 32) {
-            event.preventDefault();
-        }
-    }
-
-    function showResults () {
-        state = true;
-    }
-
-    function check (keyPressed,para) {
-        if (currentIndex == 0) {
-            start = new Date().getTime();
-        }
-        if (currentIndex == para.length-1) {
-            end = new Date().getTime();
-            setInterval (showResults,500)
-            time = Math.round((end-start)/1000);
-            accuracy =  Math.round(((para.length-errors)/para.length) * 100);
-            speed = Math.round((para.length/5)/((end-start)/60000));
-        }
-        if (keyPressed == para[currentIndex]) {
-            color = 'yellow';
-            currentIndex ++;
-        }
-        else {
-            color = 'red';
-            errors ++;
-        }
-    }
-    function reset () {
-        [currentIndex,errors,time] = [0,0,0];
-        [key,typed] = ['',''];
-    }
-
-    $: {
-        if (key) {
-            typed = para[currentIndex];
-            check(key,para);
-        }
-    }
+    import Tasks from '../components/tasks.svelte';
+    import Nav from '../components/nav.svelte';
+    import Done from '../components/done.svelte';
+    import Current from '../components/current.svelte';
+	import Forms from '../components/forms.svelte';
+    import {formsVisible} from '../store';
+    import {taskList} from '../store'; 
+    import {doneList} from '../store';  
 
 </script>
 
-{#if state == true}
-    <Results displayCover = 'block' displayBox = 'flex' accuracy = {accuracy} timeTaken = {time}
-    errors = {errors} speed = {speed}/>
+{#if $formsVisible}
+    <Forms/>
 {/if}
 
-<div class="bg-blue-200 h-auto box my-4 border-2 border-sky-500">
-    <h1 class="text-sky-800 font-bold text-center">
-        Typing Test
-    </h1>
-    <p class="text-sky-800 font-normal text-center">
-        Start typing with the first letter of the paragraph. The results will appear after completion.
-    </p>
-</div>
-
-<div class="mx-80 my-20 font-bold color1">
-    {para}
-</div>
-
-<input class="font-bold" type="text" name="typed" value={typed} disabled>
-<br><br>
-<input style="color: {color};" class="font-bold" type="text" name="UserInput" value={key} disabled>
-
-<h1 class="pt-10 font-bold text-center text-red-700">
-    Errors : {errors}
-</h1>
-
-<div class="pt-10 font-bold text-center">
-    <button on:click={reset} class="mx-2 px-2 py-1">
-        Reset
-    </button>
+<div class="container">
+    {#if $taskList.length == 0}
+        <div class='currentItem'><Current currentTask = {'No Task'} nextTask = {'No Task'}/></div>
+    {:else if $taskList.length == 1}
+        <div class='currentItem'><Current currentTask = {$taskList[0].title} nextTask = {'No Task'}/></div>
+    {:else}
+        <div class='currentItem'><Current currentTask = {$taskList[0].title} nextTask = {$taskList[1].title}/></div>
+    {/if}
+    
+    <div class='navItem'><Nav/></div>
+    <div class='tasksItem flex flex-col justify-evenly'>
+        {#if $taskList.length > 1}
+            {#each $taskList.slice(2,$taskList.length) as item}
+                <Tasks task = {item.title}/>
+            {/each}
+        {/if}
+    </div>
+    <div class='doneItem'><Done/></div>
 </div>
 
 <style>
-    :global(body) {
-        background-color: #000957;
+    .container {
+        width: fit-content;
+        display: grid;
+        grid-template-areas: 'current current current current'
+                             'nav tasks tasks tasks'
+                             'nav tasks tasks tasks'
+                             'nav done done done';
     }
-    .color1 {
-        color : #577BC1;
+    .currentItem {
+        grid-area: current;
     }
-    .box {
-        width: 20rem;
-        border-radius: 10px;
-        margin-left: 32rem;
+    .navItem {
+        grid-area: nav;
     }
-    input {
-        margin: 0 0 0 36rem;
-        scale: 1.5;
+    .doneItem {
+        grid-area: done;
     }
-    button {
-        border-radius: 10px;
-        background-color: yellow;
-        color: #000957;
+    .tasksItem {
+        background-color: black;
+        width: 50vw;
+        height: 48vh;
+        grid-area: tasks;
     }
 </style>
-
-<svelte:window on:keydown={handleKeyDown}/>
