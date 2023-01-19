@@ -1,18 +1,17 @@
 import { writable } from "svelte/store";
 
-let formVisible = false;
-let formsVisible = writable(1);
-let taskList = writable([]);
-let doneList = writable([]);
-formsVisible.set(formVisible);
+let [tb,seelist,generatedbox] = [false, false,false];
 
-export {formsVisible};
+let taskBox = writable(1);
+let seeList = writable(1);
+let generatedBox = writable(1);
+let taskList = writable([]);
+
+taskBox.set(tb);
+seeList.set(seelist);
+generatedBox.set(generatedbox);
+
+export {taskBox};
 export {taskList};
-export {doneList};
-export class Task {
-    constructor(title, startDate, endDate) {
-        this.title = title;
-        this.startDate = startDate;
-        this.endDate = endDate;
-    }
-}
+export {seeList};
+export {generatedBox};
